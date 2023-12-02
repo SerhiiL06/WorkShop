@@ -3,13 +3,7 @@ from users.models import User
 
 
 class Category(models.Model):
-    SERVICE_OPTION = (
-        ("IT", "IT Teschology"),
-        ("Comp", "Computer servise"),
-        ("Plumbing", "Plumbing servise"),
-        ("Electrician", "Electrician"),
-    )
-    service = models.CharField(max_length=15)
+    service = models.CharField(max_length=20)
 
 
 class Order(models.Model):
@@ -33,8 +27,7 @@ class Order(models.Model):
     master = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
-        limit_choices_to={"user__is_master": "True"},
+        limit_choices_to={"is_master": "True"},
         related_name="tasks",
         null=True,
-        default="Not assigned",
     )

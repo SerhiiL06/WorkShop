@@ -1,3 +1,10 @@
 from django.contrib import admin
+from .models import Category, Order
 
-# Register your models here.
+
+admin.site.register(Category)
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ["customer", "status", "master"]

@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import Order, Category
+from users.models import User
+from users.serializers import UserReadSerializer
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -8,10 +10,21 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ["service"]
 
 
-class OrderSerializer(serializers.ModelSerializer):
-    # category = serializers.ChoiceField(Category.service)
-    customer = serializers.IntegerField(read_only=True)
-
+class CreateOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ["category", "description", "customer"]
+        fields = ["category", "description"]
+
+    def get_category(self, obj):
+        return obj.category.service
+
+    def get_customer(self, obj):
+        return obj.customer.username
+
+
+class AssignedMasterSerializer(serializers.Serializer):
+    CHOISE_RESULT = (("accept", "accept"), ("rejected", "rejected"))
+
+    master = serializers.ChoiceField(choices=User.objects.filter(is_master=True))
+
+    result = serializers.ChoiceField(choices=CHOISE_RESULT)

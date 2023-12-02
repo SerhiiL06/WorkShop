@@ -2,8 +2,9 @@ from .models import User
 from .serializers import UserRegisterSerializer, UserSerializer, UserLoginSerializer
 from rest_framework import viewsets
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 from rest_framework import permissions
-from rest_framework.decorators import action
+from rest_framework.decorators import action, permission_classes as perm
 from .permissions import IsOwnerOrIsStaff
 from django.contrib.auth import authenticate, login, logout
 
@@ -19,15 +20,26 @@ class UserViewSet(viewsets.ModelViewSet):
             return UserRegisterSerializer
         return super().get_serializer_class()
 
-    @action(methods=["post"], detail=False)
+    @action(methods=["post"], detail=False, serializer_class=UserRegisterSerializer)
     def register(self, request):
-        serializer = UserRegisterSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        if not request.user.is_authenticated:
+            serializer = UserRegisterSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
 
-        return Response(status=200)
+            if (
+                serializer.validated_data["password1"]
+                != serializer.validated_data["password2"]
+            ):
+                return Response(status=400)
 
-    @action(methods=["post"], detail=False)
+            serializer.save()
+
+            return Response(status=200)
+
+        return Response(status=400)
+
+    @perm(permissions.AllowAny)
+    @action(methods=["post"], detail=False, serializer_class=UserLoginSerializer)
     def login(self, request):
         serializer = UserLoginSerializer(data=request.data)
 
