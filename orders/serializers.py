@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Order, Category
 from users.models import User
-from users.serializers import UserReadSerializer
+from .tasks import send_email_about_new_order
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -13,7 +13,19 @@ class CategorySerializer(serializers.ModelSerializer):
 class CreateOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ["category", "description"]
+        fields = ["id", "category", "description", "status"]
+
+    def create(self, validated_data):
+        order = Order.objects.create(**validated_data)
+
+        send_email_about_new_order.delay(
+            order_id=order.id,
+            description=order.description,
+            created=order.created,
+            email=order.customer.email,
+        )
+
+        return order
 
     def get_category(self, obj):
         return obj.category.service
@@ -22,9 +34,17 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         return obj.customer.username
 
 
+class MasterOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ["id", "category", "meeting_time", "description"]
+
+
 class AssignedMasterSerializer(serializers.Serializer):
     CHOISE_RESULT = (("accept", "accept"), ("rejected", "rejected"))
 
-    master = serializers.ChoiceField(choices=User.objects.filter(is_master=True))
+    master = serializers.ChoiceField(
+        choices=User.objects.filter(is_master=True), required=False
+    )
 
     result = serializers.ChoiceField(choices=CHOISE_RESULT)

@@ -5,6 +5,9 @@ from users.models import User
 class Category(models.Model):
     service = models.CharField(max_length=20)
 
+    def __str__(self) -> str:
+        return self.service
+
 
 class Order(models.Model):
     STATUS_ORDER = (
@@ -19,6 +22,8 @@ class Order(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
+
+    meeting_time = models.DateTimeField(null=True)
 
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
 

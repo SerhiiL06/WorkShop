@@ -8,3 +8,4 @@ admin.site.register(Category)
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ["customer", "status", "master"]
+    list_filter = ["status"]

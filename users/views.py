@@ -38,8 +38,12 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(status=400)
 
-    @perm(permissions.AllowAny)
-    @action(methods=["post"], detail=False, serializer_class=UserLoginSerializer)
+    @action(
+        methods=["post"],
+        detail=False,
+        serializer_class=UserLoginSerializer,
+        permission_classes=[permissions.AllowAny],
+    )
     def login(self, request):
         serializer = UserLoginSerializer(data=request.data)
 
@@ -57,7 +61,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(status=400)
 
-    @action(methods=["get"], detail=False)
+    @action(
+        methods=["get"], detail=False, permission_classes=[permissions.IsAuthenticated]
+    )
     def logout(self, request):
         if request.user.is_authenticated:
             logout(request)
@@ -65,7 +71,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(status=401)
 
-    @action(methods=["get"], detail=False)
+    @action(
+        methods=["get"], detail=False, permission_classes=[permissions.IsAuthenticated]
+    )
     def me(self, request):
         user = UserSerializer(instance=request.user, many=False)
 
