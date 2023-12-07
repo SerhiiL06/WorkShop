@@ -1,6 +1,6 @@
 from .models import User
+import re
 from rest_framework import serializers
-from rest_framework.response import Response
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -20,6 +20,12 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
         return user
 
+    def validate_password1(self, value):
+        result = re.findall(r"['A-Za-z0-9']{8,}", value)
+        if not result:
+            raise serializers.ValidationError(detail="wrond regex")
+        return value
+
 
 class UserLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -27,12 +33,6 @@ class UserLoginSerializer(serializers.Serializer):
 
 
 class UserReadSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["username", "email", "is_staff", "is_master"]
-
-
-class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["username", "email", "is_staff", "is_master"]

@@ -80,7 +80,8 @@ class MasterOrderViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return super().get_queryset().filter(master=self.request.user)
+        if self.request.user.is_authenticated:
+            return super().get_queryset().filter(master=self.request.user)
 
     @action(methods=["get"], detail=True, url_path="complete-order")
     def complete_order(self, request, *args, **kwargs):

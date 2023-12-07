@@ -1,18 +1,23 @@
 from .models import User
-from .serializers import UserRegisterSerializer, UserSerializer, UserLoginSerializer
+from .serializers import UserRegisterSerializer, UserLoginSerializer, UserReadSerializer
 from rest_framework import viewsets
 from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework import permissions
-from rest_framework.decorators import action, permission_classes as perm
+from rest_framework.decorators import action
 from .permissions import IsOwnerOrIsStaff
 from django.contrib.auth import authenticate, login, logout
+from drf_yasg.utils import swagger_auto_schema
 
 
 class UserViewSet(viewsets.ModelViewSet):
+
+    """User auth actions"""
+
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserLoginSerializer
     permission_classes = [IsOwnerOrIsStaff]
+    throttle_classes = [AnonRateThrottle]
     http_method_names = ["get", "post", "update"]
 
     def get_serializer_class(self):
@@ -20,6 +25,11 @@ class UserViewSet(viewsets.ModelViewSet):
             return UserRegisterSerializer
         return super().get_serializer_class()
 
+    @swagger_auto_schema(
+        operation_description="Endpoint for registration",
+        method="post",
+        request_body=UserRegisterSerializer,
+    )
     @action(methods=["post"], detail=False, serializer_class=UserRegisterSerializer)
     def register(self, request):
         if not request.user.is_authenticated:
@@ -30,7 +40,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 serializer.validated_data["password1"]
                 != serializer.validated_data["password2"]
             ):
-                return Response(status=400)
+                return Response(status=400, data="Password incorrect")
 
             serializer.save()
 
@@ -38,6 +48,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(status=400)
 
+    @swagger_auto_schema(method="post", request_body=UserLoginSerializer)
     @action(
         methods=["post"],
         detail=False,
@@ -75,6 +86,6 @@ class UserViewSet(viewsets.ModelViewSet):
         methods=["get"], detail=False, permission_classes=[permissions.IsAuthenticated]
     )
     def me(self, request):
-        user = UserSerializer(instance=request.user, many=False)
+        user = UserReadSerializer(instance=request.user, many=False)
 
         return Response({"user": user.data})

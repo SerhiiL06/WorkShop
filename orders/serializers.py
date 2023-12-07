@@ -43,8 +43,8 @@ class MasterOrderSerializer(serializers.ModelSerializer):
 class AssignedMasterSerializer(serializers.Serializer):
     CHOISE_RESULT = (("accept", "accept"), ("rejected", "rejected"))
 
-    master = serializers.ChoiceField(
-        choices=User.objects.filter(is_master=True), required=False
+    master = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.filter(is_master=True)
     )
 
     result = serializers.ChoiceField(choices=CHOISE_RESULT)

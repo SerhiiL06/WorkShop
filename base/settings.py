@@ -26,8 +26,10 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "djoser",
-    "orders",
     "users",
+    "orders",
+    # swagger
+    "drf_yasg",
 ]
 
 MIDDLEWARE = [
@@ -115,6 +117,7 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Rest
 
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
@@ -128,6 +131,12 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.BasicAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
+    "DEFAULT_THROTTLE_RATES": {"anon": "10/minute", "user": "1000/day"},
 }
 
 
@@ -165,3 +174,6 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "sergiy06061997@gmail.com"
 EMAIL_HOST_PASSWORD = "cxon jvmv pzar bujf"
+
+
+# swagger
